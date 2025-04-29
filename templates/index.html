@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --primary-dark: #4338ca;
+        --secondary-color: #10b981;
+        --accent-color: #8b5cf6;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f9fafb;
+        --bg-dark: #1f2937;
+        --white: #ffffff;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: var(--text-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        background-color: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 30px;
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(107, 114, 128, 0.1);
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    h1 i {
+        font-size: 1.5rem;
+    }
+
+    .controls-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .language-selector {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .language-selector label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .language-selector select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background-color: var(--white);
+        color: var(--text-dark);
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        transition: var(--transition);
+    }
+
+    .language-selector select:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    .mic-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+
+    .mic-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        padding: 12px 20px;
+        border-radius: 50px;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        transition: var(--transition);
+        color: white;
+    }
+
+    .mic-btn i {
+        font-size: 1.2rem;
+    }
+
+    #start-record-btn {
+        background-color: var(--primary-color);
+    }
+
+    #start-record-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    #stop-record-btn {
+        background-color: var(--danger-color);
+    }
+
+    #stop-record-btn:hover {
+        background-color: #dc2626;
+        transform: translateY(-2px);
+    }
+
+    #reset-btn {
+        background-color: var(--warning-color);
+    }
+
+    #reset-btn:hover {
+        background-color: #d97706;
+        transform: translateY(-2px);
+    }
+
+    #continuous-btn {
+        background-color: var(--accent-color);
+    }
+
+    #continuous-btn:hover {
+        background-color: #7c3aed;
+        transform: translateY(-2px);
+    }
+
+    .continuous-active {
+        background-color: #7c3aed !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+    }
+
+    .status-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 15px 0;
+    }
+
+    #status-indicator {
+        font-size: 0.9rem;
+        padding: 6px 15px;
+        border-radius: 20px;
+        background-color: #f3f4f6;
+        color: var(--text-light);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    #status-indicator.listening {
+        background-color: rgba(79, 70, 229, 0.1);
+        color: var(--primary-color);
+    }
+
+    #status-indicator.error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+    }
+
+    .text-input-wrapper {
+        display: flex;
+        margin: 20px 0;
+    }
+
+    #text-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px 0 0 8px;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        transition: var(--transition);
+    }
+
+    #text-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    #send-text-btn {
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 0 20px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    #send-text-btn:hover {
+        background-color: #059669;
+    }
+
+    #response-text {
+        min-height: 60px;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: rgba(243, 244, 246, 0.5);
+        overflow-wrap: break-word;
+    }
+
+    .response-container {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    #conversation-history {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px 5px;
+    }
+
+    .history-entry {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .user-input {
+        align-self: flex-end;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 18px 18px 0 18px;
+        max-width: 80%;
+        font-weight: normal;
+    }
+
+    .ai-response {
+        align-self: flex-start;
+        background-color: #f3f4f6;
+        color: var(--text-dark);
+        padding: 12px 16px;
+        border-radius: 18px 18px 18px 0;
+        max-width: 80%;
+        margin-top: 0;
+    }
+
+    .pulse-animation {
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+        }
+    }
+
+    .recording .container {
+        border: 2px solid var(--primary-color);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+        }
+        
+        .mic-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .mic-btn {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --text-dark: #f3f4f6;
+            --text-light: #d1d5db;
+            --bg-light: #1f2937;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #111827 100%);
+        }
+        
+        .container {
+            background-color: #111827;
+            border: 1px solid #374151;
+        }
+        
+        .language-selector select,
+        #text-input {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #f3f4f6;
+        }
+        
+        #status-indicator {
+            background-color: #1f2937;
+        }
+        
+        #response-text {
+            background-color: rgba(31, 41, 55, 0.5);
+        }
+        
+        .ai-response {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> AI Voice Assistant</h1>
+        </div>
+
+        <div class="controls-container">
+            <div class="language-selector">
+                <label for="language-select">Recognition Language</label>
+                <select id="language-select">
+                    <option value="en-US" selected>English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="ja-JP">Japanese</option>
+                    <option value="ko-KR">Korean</option>
+                    <option value="zh-CN">Chinese (Simplified)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mic-wrapper">
+            <button id="start-record-btn" class="mic-btn"><i class="fas fa-microphone"></i> Speak Now</button>
+            <button id="stop-record-btn" class="mic-btn"><i class="fas fa-stop-circle"></i> Stop</button>
+            <button id="reset-btn" class="mic-btn"><i class="fas fa-redo"></i> Reset</button>
+            <button id="continuous-btn" class="mic-btn"><i class="fas fa-exchange-alt"></i> Continuous</button>
+        </div>
+
+        <div class="status-wrapper">
+            <div id="status-indicator">
+                <i class="fas fa-circle"></i> Ready to record
+            </div>
+        </div>
+
+        <div class="text-input-wrapper">
+            <input type="text" id="text-input" placeholder="Or type your message here...">
+            <button id="send-text-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+
+        <div id="response-text"></div>
+
+        <div class="response-container">
+            <div id="conversation-history">
+                <!-- Conversation history will be dynamically updated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const startRecordBtn = document.getElementById('start-record-btn');
+        const stopRecordBtn = document.getElementById('stop-record-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const continuousBtn = document.getElementById('continuous-btn');
+        const responseText = document.getElementById('response-text');
+        const conversationHistory = document.getElementById('conversation-history');
+        const statusIndicator = document.getElementById('status-indicator');
+        const textInput = document.getElementById('text-input');
+        const sendTextBtn = document.getElementById('send-text-btn');
+        
+        // Initialize variables
+        let continuousMode = false;
+        let fallbackAttempts = 0;
+        const MAX_FALLBACK_ATTEMPTS = 3;
+        
+        // Check if browser supports Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            updateStatus("Your browser doesn't support speech recognition", true);
+            startRecordBtn.disabled = true;
+            stopRecordBtn.disabled = true;
+        }
+        
+        // Initialize Speech Recognition
+        let recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        
+        // Status update function
+        function updateStatus(status, isError = false) {
+            // Remove existing classes
+            statusIndicator.classList.remove('listening', 'error');
+            
+            // Set icon based on status
+            let icon = '<i class="fas fa-circle"></i>';
+            
+            if (status.includes('Listening')) {
+                icon = '<i class="fas fa-microphone"></i>';
+                statusIndicator.classList.add('listening');
+            } else if (status.includes('Continuous')) {
+                icon = '<i class="fas fa-exchange-alt"></i>';
+                statusIndicator.classList.add('listening');
+            } else if (isError) {
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+                statusIndicator.classList.add('error');
+            }
+            
+            statusIndicator.innerHTML = `${icon} ${status}`;
+            statusIndicator.style.color = isError ? 'var(--danger-color)' : '';
+        }
+        
+        // Setup recognition events
+        function setupRecognitionEvents() {
+            recognition.onstart = function() {
+                responseText.innerHTML = 'Listening...';
+                startRecordBtn.disabled = true;
+                stopRecordBtn.disabled = false;
+                startRecordBtn.classList.add('pulse-animation');
+                startRecordBtn.style.backgroundColor = '#ccc';
+                startRecordBtn.style.cursor = 'default';
+                document.body.classList.add('recording');
+                updateStatus('Listening...', false);
+            };
+            
+            recognition.onspeechend = function() {
+                recognition.stop();
+                startRecordBtn.disabled = false;
+                stopRecordBtn.disabled = true;
+                startRecordBtn.classList.remove('pulse-animation');
+                startRecordBtn.style.backgroundColor = '';
+                startRecordBtn.style.cursor = '';
+                document.body.classList.remove('recording');
+                updateStatus('Done listening', false);
+            };
+            
+            recognition.onresult = function(event) {
+                const userInput = event.results[0][0].transcript;
+                processUserInput(userInput);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                
+                if (event.error === 'language-not-supported') {
+                    console.error('Language not supported:', recognition.lang);
+                    fallbackAttempts++;
+                    
+                    if (fallbackAttempts >= MAX_FALLBACK_ATTEMPTS) {
+                        updateStatus('Speech recognition not available. Please use text input.', true);
+                        return;
+                    }
+                    
+                    // Try to re-initialize recognition completely
+                    try {
+                        recognition.abort();
+                    } catch(e) {
+                        // Ignore abort errors
+                    }
+                    
+                    // Try a different language code format
+                    const fallbackLangs = ['en-US', 'en', ''];
+                    const nextLang = fallbackLangs[fallbackAttempts % fallbackLangs.length];
+                    recognition.lang = nextLang;
+                    
+                    updateStatus(`Trying with language: ${nextLang || 'browser default'}`, false);
+                    
+                    setTimeout(() => {
+                        try {
+                            recognition.start();
+                        } catch(e) {
+                            updateStatus('Speech recognition failed. Please use text input.', true);
+                        }
+                    }, 1000);
+                } else if (event.error === 'not-allowed') {
+                    updateStatus('Microphone permission denied', true);
+                } else if (event.error === 'no-speech') {
+                    updateStatus('No speech detected. Please try again.', false);
+                    startRecordBtn.disabled = false;
+                    stopRecordBtn.disabled = true;
+                } else {
+                    updateStatus(`Error: ${event.error}`, true);
+                    startRecordBtn.disabled = false;
+                    stopRecordBtn.disabled = true;
+                }
+            };
+        }
+        
+        // Reset recognition
+        function resetRecognition() {
+            // Clean up old recognition instance
+            try {
+                recognition.abort();
+            } catch(e) {
+                // Ignore cleanup errors
+            }
+            
+            // Create fresh recognition instance
+            recognition = new SpeechRecognition();
+            recognition.lang = document.getElementById('language-select').value;
+            recognition.interimResults = false;
+            
+            // Set up all event handlers again
+            setupRecognitionEvents();
+            
+            // Reset UI
+            startRecordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+            startRecordBtn.classList.remove('pulse-animation');
+            startRecordBtn.style.backgroundColor = '';
+            startRecordBtn.style.cursor = 'pointer';
+            document.body.classList.remove('recording');
+            
+            updateStatus('Recognition reset. Ready to start.', false);
+        }
+        
+        // Start listening function
+        function startListening() {
+            // Only start if in continuous mode and not already listening
+            if (!continuousMode) {
+                console.log('Not starting: continuous mode is off');
+                return;
+            }
+            
+            if (startRecordBtn.disabled) {
+                console.log('Not starting: already listening');
+                return;
+            }
+            
+            console.log('Starting continuous listening...');
+            updateStatus('Starting continuous listening...', false);
+            
+            resetRecognition();
+            setTimeout(() => {
+                try {
+                    recognition.start();
+                    console.log('Recognition started in continuous mode');
+                    updateStatus('Listening continuously...', false);
+                } catch(e) {
+                    console.error('Failed to start recognition:', e);
+                    updateStatus('Continuous mode error. Click Speak Now to try again.', true);
+                }
+            }, 100); // Increased delay to ensure reset completes
+        }
+        
+        // Process user input (from voice or text)
+        function processUserInput(userInput) {
+            responseText.innerHTML = `You: "${userInput}"`;
+            updateStatus('Processing...', false);
+
+            // Send user input to Flask server
+            fetch('/process_voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userInput }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const aiResponse = data.response;
+                responseText.innerHTML = `AI: "${aiResponse}"`;
+                updateStatus('Response received', false);
+                updateConversationHistory(data.conversation_history);
+                speakResponse(aiResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                responseText.innerHTML = 'Error processing request. Please try again.';
+                updateStatus('Error processing request', true);
+            });
+        }
+        
+        // Speech synthesis function
+        function speakResponse(text) {
+            if (!('speechSynthesis' in window)) {
+                console.log("Speech synthesis not supported");
+                if (continuousMode) {
+                    setTimeout(() => startListening(), 1000);
+                }
+                return;
+            }
+            
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Cancel any ongoing speech
+            synth.cancel();
+            
+            // Set voice properties
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            
+            // Add event for when speech ends
+            utterance.onend = function() {
+                console.log("Speech synthesis finished");
+                if (continuousMode) {
+                    updateStatus('Restarting listening...', false);
+                    setTimeout(() => startListening(), 1000);
+                }
+            };
+            
+            synth.speak(utterance);
+        }
+        
+        // Update conversation history
+        function updateConversationHistory(history) {
+            conversationHistory.innerHTML = '';  // Clear existing history
+
+            if (!history || history.length === 0) {
+                conversationHistory.innerHTML = '<div class="history-entry">No conversation history yet.</div>';
+                return;
+            }
+
+            history.forEach(entry => {
+                const historyEntry = document.createElement('div');
+                historyEntry.classList.add('history-entry');
+
+                const userInput = document.createElement('div');
+                userInput.classList.add('user-input');
+                userInput.innerHTML = entry.user;
+
+                const aiResponse = document.createElement('div');
+                aiResponse.classList.add('ai-response');
+                aiResponse.innerHTML = entry.ai;
+
+                historyEntry.appendChild(userInput);
+                historyEntry.appendChild(aiResponse);
+
+                conversationHistory.appendChild(historyEntry);
+            });
+            
+            // Scroll to bottom of conversation
+            conversationHistory.scrollTop = conversationHistory.scrollHeight;
+        }
+        
+        // Event Listeners
+        
+        // Start recording button
+        startRecordBtn.addEventListener('click', () => {
+            fallbackAttempts = 0;
+            responseText.innerHTML = 'Starting speech recognition...';
+            
+            resetRecognition();
+            setTimeout(() => {
+                try {
+                    recognition.start();
+                    console.log('Recognition started successfully');
+                } catch(e) {
+                    console.error('Failed to start recognition:', e);
+                    responseText.innerHTML = 'Could not start recognition. Please try again.';
+                }
+            }, 100);
+        });
+        
+        // Stop recording button
+        stopRecordBtn.addEventListener('click', () => {
+            try {
+                recognition.stop();
+                console.log('Recognition stopped successfully');
+            } catch(e) {
+                console.error('Error stopping recognition:', e);
+            }
+            
+            responseText.innerHTML = 'Speech recognition stopped.';
+            startRecordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+            startRecordBtn.classList.remove('pulse-animation');
+            startRecordBtn.style.backgroundColor = '';
+            startRecordBtn.style.cursor = 'pointer';
+            document.body.classList.remove('recording');
+            updateStatus('Stopped', false);
+        });
+        
+        // Reset button
+        resetBtn.addEventListener('click', function() {
+            resetRecognition();
+        });
+        
+        // Continuous mode toggle
+        continuousBtn.addEventListener('click', function() {
+            continuousMode = !continuousMode;
+            
+            if (continuousMode) {
+                this.classList.add('continuous-active');
+                updateStatus('Continuous conversation mode ON', false);
+                if (!startRecordBtn.disabled) {
+                    startListening();
+                }
+            } else {
+                this.classList.remove('continuous-active');
+                updateStatus('Continuous conversation mode OFF', false);
+            }
+        });
+        
+        // Language selector
+        document.getElementById('language-select').addEventListener('change', function() {
+            const selectedLang = this.value;
+            try {
+                recognition.abort();
+            } catch(e) {
+                // Ignore errors
+            }
+            
+            recognition.lang = selectedLang;
+            console.log('Speech recognition language set to:', recognition.lang);
+            updateStatus(`Language set to ${this.options[this.selectedIndex].text}`, false);
+        });
+        
+        // Text input handlers
+        sendTextBtn.addEventListener('click', function() {
+            const userInput = textInput.value.trim();
+            if (userInput) {
+                processUserInput(userInput);
+                textInput.value = '';
+            }
+        });
+        
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const userInput = this.value.trim();
+                if (userInput) {
+                    processUserInput(userInput);
+                    this.value = '';
+                }
+            }
+        });
+        
+        // Initialize
+        setupRecognitionEvents();
+        updateStatus('Ready to record', false);
+        stopRecordBtn.disabled = true;
+    </script>
+</body>
+</html>
